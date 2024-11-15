@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Weather App</title>
+</head>
+<body class="bg-[url('https://wallpapercave.com/wp/wp10645138.png')] bg-no-repeat bg-cover h-screen w-full flex justify-center items-center bg-gray-500 transition-all duration-500">
+
+    <div class="main h-3/5 w-1/5 border rounded-lg gap-3 bg-white shadow-lg p-3 flex flex-col">
+        <div id="colorChange" class="top flex-1 w-full flex justify-center gap-4 flex-col items-center border bg-pink-200">
+            <h1 class="text-2xl font-bold" id="city">City</h1>
+            <h2 class="text-lg font-semibold">Temperature: <span id="temperature">0</span> °C</h2>
+            <h2>Wind Speed: <span id="speed"></span> km/h</h2>
+            <h3 class="text-md font-semibold mt-2" id="condition">Condition: <span id="weatherCondition">N/A</span></h3>
+            <p id="errorMessage" class="text-red-500 mt-2 hidden">City not found or invalid input. Please try again.</p>
+            <p id="loadingMessage" class="text-blue-500 mt-2 hidden">Loading...</p>
+        </div>
+        
+        <div class="bottom flex w-full gap-2">
+            <input id="cityName" type="text" class="w-full p-2 rounded-lg border-2 border-color-pink-200" placeholder="Enter city..." />
+            <button onclick="getWeather()" class="px-3 py-2 border rounded-lg text-black hover:bg-violet-400">Search</button>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = '0c42f7f6b53b244c78a418f4f181282a';
+        const api = `https://api.openweathermap.org/data/2.5/weather?appid=${apiKey}&units=metric&q=`;
+
+        async function getWeather() {
+            let city = document.getElementById('cityName').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const cityName = document.getElementById('city');
+            const temperature = document.getElementById('temperature');
+            const windSpeed = document.getElementById('speed');
+            const weatherCondition = document.getElementById('weatherCondition');
+
+            // Show loading message
+            loadingMessage.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+            cityName.innerText = 'City';
+            temperature.innerText = '0';
+            windSpeed.innerText = '';
+            weatherCondition.innerText = 'N/A';
+
+            // Clear input field after search
+            document.getElementById('cityName').value = '';
+
+            if (!city) {
+                errorMessage.innerText = 'Please enter a city name!';
+                errorMessage.classList.remove('hidden');
+                loadingMessage.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch(api + city);
+                if (!response.ok) throw new Error('City not found');
+
+                const data = await response.json();
+                console.log(data);
+
+                // Update UI with weather data
+                cityName.innerText = data.name;
+                temperature.innerText = data.main.temp;
+                windSpeed.innerText = data.wind.speed;
+                weatherCondition.innerText = data.weather[0].main;
+
+                // Change background based on weather condition
+                changeBackground(data.weather[0].main);
+
+                // Change the background color of the #colorChange div after search
+                const colorChangeDiv = document.getElementById('colorChange');
+                colorChangeDiv.classList.remove('bg-pink-200'); // Remove previous color
+                colorChangeDiv.classList.add('bg-slate-100'); // Add new color
+
+                // Hide loading message
+                loadingMessage.classList.add('hidden');
+
+            } catch (error) {
+                console.error(error);
+                errorMessage.innerText = 'City not found or invalid input. Please try again.';
+                errorMessage.classList.remove('hidden');
+                loadingMessage.classList.add('hidden');
+            }
+        }
+
+        // Change background based on weather condition
+        function changeBackground(condition) {
+            const body = document.querySelector('body');
+            body.style.backgroundImage = ''; 
+            body.style.backgroundSize = 'cover';
+            body.style.backgroundPosition = 'center';
+
+            if (condition === 'Clear') {
+                body.style.backgroundImage = 'url("https://lh3.googleusercontent.com/cCDc3xGUHZ00B5jJoTAK1twF4alRJdqYOseCvZs66wItTlSojz92a5Cqc5qizQe0HFMAm3579cFjMXhundzK6pkCQcDqv1Ie=s512")';
+            } 
+            else if (condition === 'Rain' || condition === 'Drizzle') {
+                body.style.backgroundImage = 'url("https://media.macphun.com/img/uploads/customer/blog/1554296795/15542980765ca4b4dcdfa463.33058128.jpg?q=85&w=2520")'; 
+            } 
+            else if (condition === 'Snow') {
+                body.style.backgroundImage = 'url("https://th.bing.com/th/id/R.4c0870774c958fe4eeaeadafe883f718?rik=VxXK5h%2f3UE1Bxw&riu=http%3a%2f%2fwww.starbackdrops.com%2fcdn%2fshop%2fproducts%2fKH09509.jpg%3fv%3d1574749640&ehk=VaK3KwD9FXlq99sT7EwO2XkRwCdSVrb5MN4XVL95p50%3d&risl=&pid=ImgRaw&r=0")';  
+            } 
+            else if (condition === 'Clouds') {
+                body.style.backgroundImage = 'url("https://th.bing.com/th/id/OIP.NAfa_FEl-igoANmCx-qErwHaE9?rs=1&pid=ImgDetMain")'; 
+            } 
+            else if (condition === 'Thunderstorm') {
+                body.style.backgroundImage = 'url("https://th.bing.com/th/id/OIP.Z8cFrebJAVya-gojyHIV1wHaEo?rs=1&pid=ImgDetMain")';  
+            } 
+            else if (condition === 'Haze') {
+                body.style.backgroundImage = 'url("https://d3avoj45mekucs.cloudfront.net/rojakdaily/media/iylia/news/hazetop5.jpg?ext=.jpg")';
+            } 
+            else if (condition === 'Smoke') {
+                body.style.backgroundImage = 'url("https://th.bing.com/th/id/OIP._3yER1EStMV3oF4yEVeM-AAAAA?rs=1&pid=ImgDetMain")';
+            } 
+            else {
+                body.style.backgroundImage = 'url("https://t3.ftcdn.net/jpg/02/11/52/42/360_F_211524227_Ett8aboQvVnROAFtqu3S1pW99Y3Th9vm.jpg")';  
+            }
+        }
+
+        // Add event listener for 'Enter' key press to trigger search
+        document.getElementById('cityName').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                getWeather();
+            }
+        });
+
+    </script>
+</body>
+</html>
